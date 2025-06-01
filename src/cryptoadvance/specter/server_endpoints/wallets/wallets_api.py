@@ -376,12 +376,14 @@ def get_label(wallet_alias):
 
 @wallets_endpoint_api.route("/wallet/<wallet_alias>/set_label", methods=["POST"])
 @login_required
-def set_label(wallet_alias):
-
+def set_label(wallet_alias): # TODO XF
     wallet: Wallet = app.specter.wallet_manager.get_by_alias(wallet_alias)
-    address = request.form["address"]
+    address = request.form.get("address")
+    output = request.form.get("output")
     label = request.form["label"].rstrip()
-    wallet.setlabel(address, label)
+    print(f"address: {address},  output: {output}, label: {label}")
+    if address:
+        wallet.setlabel(address, label)
     return jsonify(success=True)
 
 

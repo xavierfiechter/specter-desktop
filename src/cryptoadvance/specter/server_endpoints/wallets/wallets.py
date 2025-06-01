@@ -789,6 +789,9 @@ def addresses(wallet_alias):
     "/wallet/<wallet_alias>/settings/importaddresslabels", methods=["GET"]
 )
 @wallets_endpoint.route(
+    "/wallet/<wallet_alias>/settings/importbip329labels", methods=["GET"]
+)
+@wallets_endpoint.route(
     "/wallet/<wallet_alias>/settings/keypoolrefill", methods=["GET"]
 )
 @wallets_endpoint.route("/wallet/<wallet_alias>/settings/rescan", methods=["GET"])
@@ -854,6 +857,26 @@ def settings_importaddresslabels(wallet_alias):
     else:
         flash("No address labels were imported.")
     return redirect(url_for("wallets_endpoint.settings"))
+
+@wallets_endpoint.route(
+    "/wallet/<wallet_alias>/settings/importbip329labels", methods=["POST"]
+)
+@login_required
+def settings_importbip329labels(wallet_alias):
+    wallet: Wallet = app.specter.wallet_manager.get_by_alias(wallet_alias)
+    action = request.form["action"]
+    bip329_labels = request.form["bip329_labels_data"]
+    imported_bip329_len = wallet.import_bip329_labels(bip329_labels)
+
+    if imported_bip329_len > 1:
+        flash(f"Successfully imported {imported_bip329_len} BIP-329 labels.")
+    elif imported_bip329_len == 1:  # fixed a typo here from `imported_addresses_len`
+        flash(f"Successfully imported {imported_bip329_len} BIP-329 label.")
+    else:
+        flash("No BIP-329 labels were imported.")
+
+    return redirect(url_for("wallets_endpoint.settings", wallet_alias=wallet_alias))
+
 
 
 @wallets_endpoint.route(

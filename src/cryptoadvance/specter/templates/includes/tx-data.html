@@ -10,7 +10,7 @@
         <div class="note"></div>
     </div>
 </template>
-  
+
 <script type="text/javascript">
     class TxDataElement extends HTMLElement {
         constructor() {
@@ -30,11 +30,12 @@
             this.symbol = this.getAttribute('data-symbol');
             this.note.innerText = `{{ _("Loading transaction details...\n\nTransaction ID:") }}" ${this.txid}`;
             this.fetchTxData();
-        
+
             // Attach the created element to the shadow dom
             shadow.appendChild(clone);
         }
-        
+
+
         async fetchRawTx(txid) {
             let url = `{{ url_for('wallets_endpoint_api.decoderawtx', wallet_alias='WALLET_ALIAS') }}`.replace("WALLET_ALIAS", this.wallet);
             var formData = new FormData();
@@ -155,11 +156,11 @@
                         }
                         // assetlabel only exists for Liquid, for BTC it is just null
                         var amountAndUnit = formatBtcAmount(spentOutput.value, spentOutput.assetlabel, this.btcUnit == 'sat');
-                        var price = formatPrice(spentOutput.value, spentOutput.assetlabel, this.symbol, this.price); 
+                        var price = formatPrice(spentOutput.value, spentOutput.assetlabel, this.symbol, this.price);
 
                         addressAndValue = `
                             {{ _("Address:") }} <span style="word-wrap: break-word;">${address}</span><br>
-                            {{ _("Label:") }} 
+                            {{ _("Label:") }}
                             <address-label  style="display: inline-block; vertical-align: middle;"
                                 data-copy-hidden="true"
                                 data-address="${address}"
@@ -182,11 +183,11 @@
                         continue;
                     }
                     if (jsonResponse.nonWalletTxId) {
-                        let nonWalletTxId = jsonResponse.nonWalletTxId ? `<span>Not known, this is a non-wallet txid.</span>` : null
+                        let nonWalletTxId = jsonResponse.nonWalletTxId ? `<span>Not known, this is a non-wallet Transaction ID.</span>` : null
                         rawtxHTML += `
                             <p class="tx_info" data-style="text-align: left; background-color: ${bgColor};">
                                 <b>{{ _("Input #") }}${i}</b><br><br>
-                                {{ _("Transaction id") }}: <explorer-link data-style="word-break: break-all;" data-type="tx" data-value="${rawtx.vin[i].txid}"></explorer-link><br>
+                                {{ _("Transaction ID") }}: <explorer-link data-style="word-break: break-all;" data-type="tx" data-value="${rawtx.vin[i].txid}"></explorer-link><br>
                                 {{ _("Output index: ") }}${rawtx.vin[i].vout}<br>
                                 {{ _("Address & value:") }} ${nonWalletTxId}
                             </p>
@@ -196,7 +197,7 @@
                         rawtxHTML += `
                             <p class="tx_info" data-style="text-align: left; background-color: ${bgColor};">
                                 <b>{{ _("Input #") }}${i}</b><br><br>
-                                {{ _("Transaction id") }}: <explorer-link data-style="word-break: break-all;" data-type="tx" data-value="${rawtx.vin[i].txid}"></explorer-link><br>
+                                {{ _("Transaction ID") }}: <explorer-link data-style="word-break: break-all;" data-type="tx" data-value="${rawtx.vin[i].txid}"></explorer-link><br>
                                 {{ _("Output index: ") }}${rawtx.vin[i].vout}<br>
                                 ${addressAndValue}
                             </p>
@@ -207,10 +208,12 @@
 
                 rawtxHTML += `<h3>{{ _("Outputs") }}</h3>`;
                 for (let i in rawtx.vout) {
+                    console.log("OUTPUT")
+                    console.log(rawtx.hash,':', i)
                     let address = rawtx.vout[i].addresses && rawtx.vout[i].addresses.length == 1 ? rawtx.vout[i].addresses[0] : 'Unknown';
                     if (address == 'Unknown') {
                         address = rawtx.vout[i].scriptPubKey.addresses && rawtx.vout[i].scriptPubKey.addresses.length == 1 ? rawtx.vout[i].scriptPubKey.addresses[0] : 'Unknown';
-                    
+
                     }
                     if (address == 'Unknown') {
                         address = rawtx.vout[i].scriptPubKey.address ? rawtx.vout[i].scriptPubKey.address : 'Unknown';
@@ -231,42 +234,79 @@
                     } else if (address != "Unknown") {
                         labelAttr = `data-label="${address}"`;
                     }
+
+                    let outputLabelAttr = "";
+                    console.log("outputLabelAttr");
+                    console.log(rawtx.vout[i])
+                    if ("label" in rawtx.vout[i]) {
+                        outputLabelAttr = `data-label="${rawtx.vout[i].label}"`;
+                    } else if (address != "Unknown") {
+                        outputLabelAttr = `data-label="${address}"`;
+                    }
+
                     let serviceIdAttr = "";
                     if ("service_id" in rawtx.vout[i]) {
                         serviceIdAttr = `data-service-id="${rawtx.vout[i].service_id}"`;
                     }
                     // assetlabel only exists for Liquid, for BTC it is just null
                     var amountAndUnit = formatBtcAmount(rawtx.vout[i].value, rawtx.vout[i].assetlabel, this.btcUnit == 'sat');
-                    var price = formatPrice(rawtx.vout[i].value, rawtx.vout[i].assetlabel, this.symbol, this.price); 
+                    var price = formatPrice(rawtx.vout[i].value, rawtx.vout[i].assetlabel, this.symbol, this.price);
 
                     rawtxHTML += `
-                    <p class="tx_info" data-style="text-align: left; background-color: ${bgColor};">
-                        <b>{{ _("Output #${i}") }}</b><br><br>
-                        {{ _("Address:") }} <span style="word-break: break-all;">${address}</span><br>
-                        {{ _("Label:") }} 
-                        <address-label style="display: inline-block; vertical-align: middle;"
-                            data-copy-hidden="true"
-                            data-address="${address}"
-                            data-wallet="${this.wallet}"
-                            ${labelAttr}
-                            ${serviceIdAttr}>
-                        </address-label><br>
-                        {{ _("Value:") }} ${amountAndUnit} ${price}
-                    </p>
-                    `;
+    <table class="tx-data-table -mx-4 mt-8" style="border-left: 5px solid ${bgColor};">
+        <tbody>
+            <tr>
+                <td><b>{{ _("Output #${i}") }}</b></td>
+            </tr>
+            <tr>
+                <td>{{ _("Value:") }}</td>
+                <td>${amountAndUnit} ${price}</td>
+            </tr>
+            <tr>
+                <td>{{ _("Output Label:") }}</td>
+                <td>
+                    <output-label style="display: inline-block; vertical-align: middle;"
+                        data-copy-hidden="true"
+                        data-output="${rawtx.hash}:${i}"
+                        data-wallet="${this.wallet}"
+                        ${outputLabelAttr}>
+                    </output-label>
+                </td>
+            </tr>
+            <tr>
+                <td>{{ _("Address:") }}</td>
+                <td><span style="word-break: break-all;">${address}</span></td>
+            </tr>
+            <tr>
+                <td>{{ _("Address Label:") }}</td>
+                <td>
+                    <address-label style="display: inline-block; vertical-align: middle;"
+                        data-copy-hidden="true"
+                        data-address="${address}"
+                        data-wallet="${this.wallet}"
+                        ${labelAttr}
+                        ${serviceIdAttr}>
+                    </address-label>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    `;
+
+
                 }
-                
+                console.log(rawtxHTML);
                 this.info.innerHTML = rawtxHTML;
                 this.note.innerText = "";
                 return;
             };
             this.note.innerText = '{{ _("Failed to load transaction details...") }}';
         }
-        
+
         async fetchAddressIsMine(address) {
             let url = `{{ url_for('wallets_endpoint_api.is_address_mine', wallet_alias='WALLET_ALIAS', address='ADDRESS') }}`.replace("WALLET_ALIAS", this.wallet).replace("ADDRESS", address);
             try {
-                const response = await send_request(url, 'GET', '{{ csrf_token() }}'); 
+                const response = await send_request(url, 'GET', '{{ csrf_token() }}');
                 return response['is_mine'];
             }  catch(e) {
                 showError(`{{ _("Failed to check is_address_mine...") }}`);

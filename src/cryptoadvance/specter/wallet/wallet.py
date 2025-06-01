@@ -22,6 +22,8 @@ from embit.transaction import Transaction
 from cryptoadvance.specter.commands.utxo_scanner import UtxoScanner
 from cryptoadvance.specter.rpc import RpcError
 
+from bip329.bip329_writer import BIP329JSONLWriter
+
 from ..device import Device
 from ..helpers import get_address_from_dict
 from ..key import Key
@@ -36,6 +38,7 @@ from .tx_fetcher import TxFetcher
 from .txlist import TxItem, TxList, WalletAwareTxItem
 from .abstract_wallet import AbstractWallet
 from .addresslist import AddressList, Address
+from .bip329 import BIP329_StreamParser
 
 logger = logging.getLogger(__name__)
 LISTTRANSACTIONS_BATCH_SIZE = 1000
@@ -416,6 +419,48 @@ class Wallet(AbstractWallet):
         Most of that code could probably encapsulated in the TxList class.
         """
         TxFetcher.fetch_transactions(self)
+
+    """
+     {"type": "addr", "ref": "xxx", "label": "Coffee"}
+    {"type": "addr", "ref": "2NE2HjG1je4DEU2UFaRhnu6DiVh5WpPCem1", "label": "asdasdasd"}
+    {"type": "tx", "ref": "f7c0017379d1fe022dbe9c37843a6b5bbbc02931caab8628c6e42b49cd55aa4f", "label": "asdasdasqd111111"}
+    {"type": "output", "ref": "8ade1aa5b6a61525af02f2f1bdbc11da1c233f1b59f9a01dcf70e9db18b65adfc:0", "label": "asdasdasd111111"}
+    {"type": "tx", "ref": "0ae196415939cfbbd8ab436a6ee0c3765eb76a477e1a8c530528b5d1966c7106", "label": "111"}
+    {"type": "addr", "ref": "2NE2HjG1je4DEU2UFaRhnu6DiVh5WpPCem1", "label": "asdasdasd"}
+    {"type": "tx", "ref": "f7c0017379d1fe022dbe9c37843a6b5bbbc02931caab8628c6e42b49cd55aa4f", "label": "asdasdasqd111111"}
+    {"type": "output", "ref": "8adeaa5b6a61525af02f2f1bdbc11da1c233f1b59f9a01dcf70e9db18b65adfc:0", "label": "asdasdasd111111"}
+    {"type": "tx", "ref": "0ae196415939cfbbd8ab436a6ee0c3765eb76a477e1a8c530528b5d1966c7106", "label": "111"}
+    {"type": "addr", "ref": "2NE2HjG1je4DEU2UFaRhnu6DiVh5WpPCem1", "label": "asdasdasd"}
+    {"type": "tx", "ref": "f7c0017379d1fe022dbe9c37843a6b5bbbc02931caab8628c6e42b49cd55aa4f", "label": "asdasdasqd111111"}
+    {"type": "output", "ref": "8adeaa5b6a61525af02f2f1bdbc11da1c233f1b59f9a01dcf70e9db18b65adfc:0", "label": "asdasdasd111111"}
+    {"type": "tx", "ref": "0ae196415939cfbbd8ab436a6ee0c3765eb76a477e1a8c530528b5d1966c7106", "label": "111"}
+
+    """
+    def import_bip329_labels(self, bip329_labels):
+        if not bip329_labels:
+            logger.warning(f"No argument was passed.")
+            raise SpecterError("Looks like you didn't input any data. Try again!")
+        try:
+            logger.debug(bip329_labels)
+        except ValueError:
+            logger.debug("In the BIP-329 upload.")
+
+        parser = BIP329_StreamParser(bip329_labels)
+        labels = parser.load_entries()
+
+        labeled_addresses = {}
+        for label in labels:
+            if label.get('type') == "addr":
+                labeled_addresses[label.get('ref')] = label.get('label')
+        # Convert labeled_addresses to arr (for AddressList.set_labels)
+        arr = [
+            {"address": address, "label": label}
+            for address, label in labeled_addresses.items()
+            if address in self._addresses
+        ]
+        logger.info(f"Array for set_labels is: {arr}")
+        self._addresses.set_labels(arr)
+        return len(labels)
 
     def import_address_labels(self, address_labels):
         """
@@ -840,11 +885,26 @@ class Wallet(AbstractWallet):
             psbtid: psbtobj.to_dict() for psbtid, psbtobj in self.pending_psbts.items()
         }
 
+    def to_bip329(self):
+        filename = self.fullpath.replace(".json", "-bip-329-labels.jsonl")
+        label_writer = BIP329JSONLWriter(filename, remove_existing=True)
+        label_entry = {
+            "type": "tx",
+            "ref": "transaction_id",
+            "label": "Transaction Label"
+        }
+        label_writer.write_label(label_entry)
+
     def save_to_file(self):
         write_json_file(self.to_json(), self.fullpath)
         self.update_balance()
 
+
+
+
+
     def delete_files(self):
+        delete_file(self.fullpath.replace(".json", "-bip-329-labels.jsonl"))
         delete_file(self.fullpath)
         delete_file(self.fullpath + ".bkp")
         delete_file(self._addresses.path)

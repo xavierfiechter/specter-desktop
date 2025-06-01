@@ -28,6 +28,9 @@ describe('Ghost machine', () => {
         // Specter JSON
         cy.get('#export_specter_format').click()
         cy.readFile(`./cypress/downloads/Ghost wallet.json`)
+        // BIP-329 JSONL
+        cy.get('#export_bip329_format').click()
+        cy.readFile(`./cypress/downloads/Ghost wallet.json`)
         // Backup PDF
         cy.get('#pdf-wallet-download').click()
         cy.readFile(`./cypress/downloads/ghost_wallet_backup.pdf`)

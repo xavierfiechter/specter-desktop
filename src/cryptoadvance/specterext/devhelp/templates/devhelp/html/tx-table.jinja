@@ -9,6 +9,8 @@
 <!-- The service-data include needs a service -->
 {% include "includes/services-data.html" %}
 {% include "includes/address-label.html" %}
+{% include "includes/output-label.html" %}
+
 {% include "includes/tx-row.html" %}
 {% include "includes/tx-data.html" %}
 {% include "includes/explorer-link.html" %}
@@ -16,8 +18,8 @@
 
 
 <p>
-    Tx-table needs either an existing wallet-alias making an Ajax-call to 
-    <code>	/wallets/wallet/myhot_2/history/</code> or you pass tx-data via 
+    Tx-table needs either an existing wallet-alias making an Ajax-call to
+    <code>	/wallets/wallet/myhot_2/history/</code> or you pass tx-data via
     its tx-data attribute. You can insert a service-id attribute which will do?!
 </p>
 
@@ -32,34 +34,34 @@
         {? include "includes/explorer-link.html" ?}
         {? include "includes/tx-table.html" ?}
         <tx-table
-            price="41559.45" 
-            symbol="$" 
-            btc-unit="btc" 
-            blockhash="false" 
-            type="txlist" 
-            hide-sensitive-info="false" 
+            price="41559.45"
+            symbol="$"
+            btc-unit="btc"
+            blockhash="false"
+            type="txlist"
+            hide-sensitive-info="false"
             service-id="someservice"
             type="txlist"
             tx-data='[
-                {"txid": "aafaecb085944a6fce4556885c1f10c1cd97bac146a2a0e676a2b12bcf428d3b", "blockhash": "201eea173347cdc8e8effeaf96053b5867860cec163f3eacec7c8918c94bdaaa", "blockheight": 721, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qyncynwdxmeynk245wa3f4urul3nm2v0ulfueek", "amount": 20.0, "ismine": true, "confirmations": 780, "label": "Address #6", "validated_blockhash": ""}, 
+                {"txid": "aafaecb085944a6fce4556885c1f10c1cd97bac146a2a0e676a2b12bcf428d3b", "blockhash": "201eea173347cdc8e8effeaf96053b5867860cec163f3eacec7c8918c94bdaaa", "blockheight": 721, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qyncynwdxmeynk245wa3f4urul3nm2v0ulfueek", "amount": 20.0, "ismine": true, "confirmations": 780, "label": "Address #6", "validated_blockhash": ""},
                 {"txid": "1f2b4f9b6762ab37d3b0495cda51d8733c68a5e3a01356f0a67f215a29b2f05e", "blockhash": "05d7c1f7c4fa2a530e0916dcd15551657c22f4c30df175292b0c0b0f320adc10", "blockheight": 722, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qc3z4j7kksr3wm2heaahzx62yjrj8fn83s7x3ps", "amount": 20.0, "ismine": true, "confirmations": 779, "label": "Address #7", "validated_blockhash": ""}]"'
         />
 
     </div>
 
     <div class="table-holder">
-        <tx-table 
-            price="41559.45" 
-            symbol="$" 
-            btc-unit="btc" 
-            blockhash="false" 
-            type="txlist" 
-            hide-sensitive-info="false" 
+        <tx-table
+            price="41559.45"
+            symbol="$"
+            btc-unit="btc"
+            blockhash="false"
+            type="txlist"
+            hide-sensitive-info="false"
             wallet="myhot_2">
         </tx-table>
     </div>
 
-</textarea>    
+</textarea>
 </code>
 
 
@@ -68,8 +70,8 @@
 {% include "devhelp/includes/set-wallet.html" %}
 <br>
 Tx-Data (Does not work yet): <input type="text" id="txdata" site=50/ value='[
-{"txid": "aafaecb085944a6fce4556885c1f10c1cd97bac146a2a0e676a2b12bcf428d3b", "blockhash": "201eea173347cdc8e8effeaf96053b5867860cec163f3eacec7c8918c94bdaaa", "blockheight": 721, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qyncynwdxmeynk245wa3f4urul3nm2v0ulfueek", "amount": 20.0, "ismine": true, "confirmations": 780, "label": "Address #6", "validated_blockhash": ""}, 
-{"txid": "1f2b4f9b6762ab37d3b0495cda51d8733c68a5e3a01356f0a67f215a29b2f05e", "blockhash": "05d7c1f7c4fa2a530e0916dcd15551657c22f4c30df175292b0c0b0f320adc10", "blockheight": 722, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qc3z4j7kksr3wm2heaahzx62yjrj8fn83s7x3ps", "amount": 20.0, "ismine": true, "confirmations": 779, "label": "Address #7", "validated_blockhash": ""}, 
+{"txid": "aafaecb085944a6fce4556885c1f10c1cd97bac146a2a0e676a2b12bcf428d3b", "blockhash": "201eea173347cdc8e8effeaf96053b5867860cec163f3eacec7c8918c94bdaaa", "blockheight": 721, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qyncynwdxmeynk245wa3f4urul3nm2v0ulfueek", "amount": 20.0, "ismine": true, "confirmations": 780, "label": "Address #6", "validated_blockhash": ""},
+{"txid": "1f2b4f9b6762ab37d3b0495cda51d8733c68a5e3a01356f0a67f215a29b2f05e", "blockhash": "05d7c1f7c4fa2a530e0916dcd15551657c22f4c30df175292b0c0b0f320adc10", "blockheight": 722, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qc3z4j7kksr3wm2heaahzx62yjrj8fn83s7x3ps", "amount": 20.0, "ismine": true, "confirmations": 779, "label": "Address #7", "validated_blockhash": ""},
 ]'> <button id="settxdata">SetTxdata</button>
 </div>
 
@@ -80,18 +82,18 @@ Tx-Data (Does not work yet): <input type="text" id="txdata" site=50/ value='[
 
 <tx-table
 id="someid"
-price="41559.45" 
-symbol="$" 
-btc-unit="btc" 
-blockhash="false" 
-type="txlist" 
-hide-sensitive-info="false" 
+price="41559.45"
+symbol="$"
+btc-unit="btc"
+blockhash="false"
+type="txlist"
+hide-sensitive-info="false"
 service-id="someservice"
 type="txlist"
 tx-data='[
-    {"txid": "aafaecb085944a6fce4556885c1f10c1cd97bac146a2a0e676a2b12bcf428d3b", "blockhash": "201eea173347cdc8e8effeaf96053b5867860cec163f3eacec7c8918c94bdaaa", "blockheight": 721, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qyncynwdxmeynk245wa3f4urul3nm2v0ulfueek", "amount": 20.0, "ismine": true, "confirmations": 780, "label": "Address #6", "validated_blockhash": ""}, 
+    {"txid": "aafaecb085944a6fce4556885c1f10c1cd97bac146a2a0e676a2b12bcf428d3b", "blockhash": "201eea173347cdc8e8effeaf96053b5867860cec163f3eacec7c8918c94bdaaa", "blockheight": 721, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qyncynwdxmeynk245wa3f4urul3nm2v0ulfueek", "amount": 20.0, "ismine": true, "confirmations": 780, "label": "Address #6", "validated_blockhash": ""},
     {"txid": "1f2b4f9b6762ab37d3b0495cda51d8733c68a5e3a01356f0a67f215a29b2f05e", "blockhash": "05d7c1f7c4fa2a530e0916dcd15551657c22f4c30df175292b0c0b0f320adc10", "blockheight": 722, "time": 1644162928, "conflicts": [], "bip125-replaceable": "no", "vsize": null, "category": "receive", "address": "bcrt1qc3z4j7kksr3wm2heaahzx62yjrj8fn83s7x3ps", "amount": 20.0, "ismine": true, "confirmations": 779, "label": "Address #7", "validated_blockhash": ""}
-    
+
     ]'
 >
 </tx-table>
@@ -101,12 +103,12 @@ tx-data='[
 
 <tx-table
     id="someotherid"
-    price="41559.45" 
-    symbol="$" 
-    btc-unit="btc" 
-    blockhash="false" 
-    type="txlist" 
-    hide-sensitive-info="false" 
+    price="41559.45"
+    symbol="$"
+    btc-unit="btc"
+    blockhash="false"
+    type="txlist"
+    hide-sensitive-info="false"
     type="txlist"
     wallet="{{ wallet.alias }}">
 </tx-table>
@@ -116,12 +118,12 @@ tx-data='[
 <script type="text/javascript">
 
     var setTxdataButton = document.getElementById('settxdata')
-    
+
     setTxdataButton.addEventListener("click", (event) => {
         var txdata = document.getElementById('txdata').value
         document.getElementById('someid').setAttribute("tx-data", address)
         console.log(walletAlias)
     });
-    
+
 </script>
 {% endblock %}

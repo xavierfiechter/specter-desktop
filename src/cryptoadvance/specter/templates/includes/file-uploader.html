@@ -23,57 +23,55 @@ document.addEventListener('file-upload', e => {
 		<img>
 		<slot name="description">Choose file</slot>
 		<slot name="tool-tip"></slot>
-	</label> 
+	</label>
 </template>
 
 <script type="module">
-
 class FileUploaderElement extends HTMLElement {
 	constructor() {
 		super();
 		const shadowRoot = this.attachShadow({mode: 'open'});
 		const template = document.getElementById('file-uploader');
 		const clone = template.content.cloneNode(true);
-		this.img = clone.querySelector('img')
+		this.img = clone.querySelector('img');
 		this.img.src = this.getAttribute("image_src");
 		this.img.style.width = this.getAttribute("image_width");
-		this.uploadButton = clone.querySelector('label')
+		this.uploadButton = clone.querySelector('label');
 		this.uploadButton.style.width = this.getAttribute("button_width");
 		this.uploadButton.style.height = this.getAttribute("button_height");
-		this.uploadButton.style.background = this.getAttribute("button_color")
+		this.uploadButton.style.background = this.getAttribute("button_color");
 
-		let el = clone.getElementById("input-file");
+			const inputFile = clone.getElementById("input-file");
 
-		el.addEventListener("click", (e) => {
-			// Needed for Chrome to ensure change event is triggered if the same file is uploaded more than once
-			el.value = '';
-		})
+			inputFile.addEventListener("click", () => {
+				inputFile.value = ''; // Reset the input
+			});
 
-		el.addEventListener("change", (e) => {
-			// Only one file can be selected
-			let file = e.currentTarget.files[0];
-			var result
-            let reader = new FileReader();
-            reader.onload = (e) => {
-                result = reader.result;
-                // if raw bytes
-                if(reader.result.startsWith("psbt") || reader.result.startsWith("pset")){
-                    result = btoa(reader.result);
-                }
-                this.dispatchReadResult(result);
-            }
-            reader.readAsBinaryString(file);
-		})
+			inputFile.addEventListener("change", (e) => {
+				const file = e.currentTarget.files[0];
+				const reader = new FileReader();
+				reader.onload = (event) => {
+					let result = event.target.result;
+					if (this.getAttribute('read_as') === 'binary') {
+						result = btoa(result); // Process as binary if required
+					}
+					this.dispatchReadResult(result);
+				};
+				reader.readAsBinaryString(file);
+			});
 
-		shadowRoot.appendChild(clone);
+			shadowRoot.appendChild(clone);
+		}
+
+		dispatchReadResult(result) {
+			const eventName = this.getAttribute('event_name') || 'file-upload';
+			this.dispatchEvent(new CustomEvent(eventName, {
+				bubbles: true,
+				composed: true,
+				detail: { result },
+			}));
+		}
 	}
-	dispatchReadResult(result) {
-		this.dispatchEvent(new CustomEvent('file-upload', {
-  		bubbles: true,
-  		composed: true, // not necessary here, only if the event was dispatched from an element within the FileUploaderElement 
-  		detail: {result},
-		}));
-	}
-}	
-customElements.define('file-uploader', FileUploaderElement);
+
+	customElements.define('file-uploader', FileUploaderElement);
 </script>

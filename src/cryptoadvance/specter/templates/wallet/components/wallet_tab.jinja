@@ -1,6 +1,7 @@
 {% extends "base.jinja" %}
 {% block main %}
     {% include "includes/address-label.html" %}
+    {% include "includes/output-label.html" %}  
     <h1 id="title">{{wallet.name}}</h1>
     {% if tab == 'settings' %}
         {% from 'components/editable_title.jinja' import editable_title %}

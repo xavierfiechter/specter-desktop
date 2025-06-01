@@ -89,7 +89,7 @@
 							</tr>
 						</tbody>
 					</table>
-				</div>	
+				</div>
 			{% endfor %}
 		</div>
 	</div>
@@ -114,7 +114,7 @@
 				{% for device in wallet.devices %}
 					{% if device.exportable_to_wallet %}
 						{% if device.wallet_export_type == 'file' %}
-							<a 
+							<a
 							download="{{ wallet.name | ascii20 }}.txt"
 							href="data:text/plain;charset=US-ASCII,{{ device.export_wallet(wallet) }}"
 							{% if device.device_type == 'coldcard' %}
@@ -136,7 +136,7 @@
 					{% endif %}
 				{% endfor %}
 			{% endif %}
-			
+
 			<h3>{{ _("Export to wallet software") }}</h3>
 			<p>{{ _("Export this wallet to another Specter instance or other supported wallet softwares by scanning the QR code or importing the JSON file.") }}</p>
 			<button onclick="showPageOverlay('account_map_export', null, 'start')" type="button" class="button mt-3" data-cy="show-export-details-overlay-btn">{{ _("Go to export details") }}</button>
@@ -144,6 +144,11 @@
 			<h3 class="mt-8">{{ _("Specter wallet backup") }}</h3>
 			<p>{{ _("Create a JSON file containing all wallet data including labels.") }}</p>
 			<a download="{{ wallet.name }}.json" class="button mt-3" id="export_specter_format">Download Specter JSON file</a>
+
+			<h3 class="mt-8">{{ _("Export wallet labels") }}</h3>
+			<p>{{ _("Create a JSONL file following the BIP-329 standard that contains all wallet data, including labels.") }}</p>
+			<a download="{{ wallet.name }}.jsonl" class="button mt-3" id="export_bip329_format">Download BIP-329 JSONL file</a>
+
 
 			<h3 class="mt-8">{{ _("Printable PDF backup") }}</h3>
 			<p>
@@ -168,7 +173,7 @@
 				</div>
 			</div>
 
-			{% if not wallet.is_multisig %} 
+			{% if not wallet.is_multisig %}
 				<h3 class="mt-8">{{ _("Uncle Jim PDF") }}</h3>
 				<p>
 					{{ _("PDF optimized for Uncle Jims: hand out addresses to receive funds for friends & family without hardware wallet.") }}
@@ -190,22 +195,46 @@
 
 	<div class="hidden" id="wallet_advanced_settings_tab">
 		<div>
-			<h3>{{ _("Import address labels (Electrum or Specter)") }}</h3>
-
-			<form action="./importaddresslabels" method="POST" class="padded" data-style="max-width: 500px">
+			<h3>{{ _("Import BIP-329 labels") }}</h3>
+			<p>{{ _("File structure must meet the BIP-329 specification.") }} {{ _("The import overwrites existing labels.") }}</p>
+			<form action="./importbip329labels" method="POST" class="padded" data-style="max-width: 500px">
 				<input type="hidden" class="csrf-token" name="csrf_token" value="{{ csrf_token() }}"/>
 				<div>
-					<dnd-textarea 
-						name="address_labels_data" 
-						id="address_labels_data" 
-						placeholder="{{ _('You can paste and drag & drop here: ') }}{{ _('Electrum JSON file, Specter addresses CSV or Specter JSON file') }}"  
+					<dnd-textarea
+						name="bip329_labels_data"
+						id="bip329_labels_data"
+						placeholder="{{ _('You can paste and drag & drop here: ') }}{{ _('BIP-329 JSONL file') }}"
 						textarea-style="margin-bottom: 10px;"
 					>
 					</dnd-textarea>
 
 					<div class="flex justify-between">
-						<file-uploader class="button" id="label-uploader" image_src="{{ url_for('static', filename='img/file.svg') }}" image_width="30px">
-							<span slot="description">Upload File</span>
+					<file-uploader class="button" id="bip329-label-uploader" event_name="bip-329-file-upload" image_src="{{ url_for('static', filename='img/file.svg') }}" image_width="30px">
+							<span slot="description">Upload BIP-329 File</span>
+						</file-uploader>
+						<button type="submit" name="action" value="import_bip329_labels" class="button bg-accent text-white" data-style="max-width: 130px; margin-left: 20px">{{ _("Import") }}
+						</button>
+					</div>
+				</div>
+			</form>
+
+			<div class="section-separator"></div>
+
+			<h3>{{ _("Import address labels (Electrum or Specter)") }}</h3>
+			<form action="./importaddresslabels" method="POST" class="padded" data-style="max-width: 500px">
+				<input type="hidden" class="csrf-token" name="csrf_token" value="{{ csrf_token() }}"/>
+				<div>
+					<dnd-textarea
+						name="address_labels_data"
+						id="address_labels_data"
+						placeholder="{{ _('You can paste and drag & drop here: ') }}{{ _('Electrum JSON file, Specter addresses CSV or Specter JSON file') }}"
+						textarea-style="margin-bottom: 10px;"
+					>
+					</dnd-textarea>
+
+					<div class="flex justify-between">
+						<file-uploader class="button" id="label-uploader" event_name="file-upload" image_src="{{ url_for('static', filename='img/file.svg') }}" image_width="30px">
+							<span slot="description">Upload Address Labels File</span>
 						</file-uploader>
 						<button type="submit" name="action" value="import_address_labels" class="button bg-accent text-white" data-style="max-width: 130px; margin-left: 20px">{{ _("Import") }}
 							<tool-tip width="200px">
@@ -216,7 +245,7 @@
 									{{ _('{"labels": {"some_label": ["bc1qj3..."], ...}') }}<br><br>
 									{{ _('The expected format for Specter CSV contains:') }}<br>
 									{{ _('Address,Label') }}<br>
-									{{ _('bc1qj3...,some_label') }}<br> 
+									{{ _('bc1qj3...,some_label') }}<br>
 								</span>
 							</tool-tip>
 						</button>
@@ -359,14 +388,18 @@
 	</div>
 {% endblock %}
 
-{% block scripts %} 
+{% block scripts %}
 	<script type="text/javascript">
-		
 		let uploader = document.getElementById('label-uploader');
 		uploader.addEventListener('upload', e => {
 			let result = e.detail.result;
-			console.log(result);
 			document.getElementById("address_labels_data").value = result;
+		});
+
+		let bip329_uploader = document.getElementById('bip329-label-uploader');
+		bip329_uploader.addEventListener('upload', e => {
+			let result = e.detail.result;
+			document.getElementById("bip329_labels_data").value = result;
 		});
 
 		document.addEventListener("DOMContentLoaded", function(){
@@ -374,10 +407,16 @@
 			document.getElementById('export_specter_format').href = "data:text/json;charset=utf-8," + walletDataSpecterFormat;
 		});
 
+		// TODO XF
+		document.addEventListener("DOMContentLoaded", function(){
+			let walletDataSpecterFormat = encodeURIComponent(`{{ wallet.to_json(for_export=True)|tojson }}`);
+			document.getElementById('export_bip329_format').href = "data:text/jsonl;charset=utf-8," + walletDataSpecterFormat;
+		});
+
 		const registerMultisigOnDevice = async (fingerprint) => {
 			const descriptor = '{{ wallet.descriptor }}'
 			await registerMultisig(descriptor, fingerprint)
-        }
+    }
 
 		function toggleKeysList() {
 			let titleButton = document.getElementById('toggle_keys_list');
@@ -459,20 +498,30 @@
 			}
 		}
 
-		let textarea = document.getElementById("address_labels_data");
+		// BIP-329 Upload
+		document.addEventListener('bip-329-file-upload', e => {
+			let bip329_textarea = document.getElementById("bip329_labels_data");
+			let result = e.detail.result;
+			bip329_textarea.value = result;
+		});
 
+		// Address Labels Upload (Electrum and Specter Upload)
 		document.addEventListener('file-upload', e => {
+			let textarea = document.getElementById("address_labels_data");
 			let result = e.detail.result;
 			textarea.value = result;
-		})
+		});
 
-		// Makes sure that the textarea for labels is cleared
+		// Makes sure that the textareas for labels are cleared
 		document.addEventListener("DOMContentLoaded", () => {
 			let textarea = document.getElementById("address_labels_data");
 			textarea.value = "";
+			let bip329_textarea = document.getElementById("bip329_labels_data");
+			bip329_textarea.value = "";
 		})
 
-	    function scrolltoRescanBlockchain() {
+
+		function scrolltoRescanBlockchain() {
 			setSettingsView("advanced");
 			document.getElementById('blockchain-rescan').scrollIntoView();
 		}

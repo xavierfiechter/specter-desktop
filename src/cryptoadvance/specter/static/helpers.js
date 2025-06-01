@@ -53,7 +53,7 @@ document.addEventListener("updateAddressLabel", function (e) {
 			});
 		});
 	}
-	
+
 	if (document.querySelector('address-data')) {
 		document.querySelector('address-data').shadowRoot.querySelectorAll('address-label').forEach(el => {
 			let event = new CustomEvent('updateAddressLabel', { detail: e.detail });
@@ -99,6 +99,82 @@ document.addEventListener("click", (e) => {
 		})
 	}
 })
+
+
+// output label // TODO XF
+// TODO XF - we don't need it everywhere, it's just copy pasted and adapted at this point
+document.addEventListener("updateOutputLabel", function (e) {
+	document.querySelectorAll('output-label').forEach(el => {
+		let event = new CustomEvent('updateOutputLabel', { detail: e.detail });
+		return el.dispatchEvent(event);
+	});
+
+	// TODO: Needed currently for all custom elements containing <output-label>
+	// Find an alternative which would work regardless of shadowRoot
+	if (document.querySelector('tx-table')) {
+		document.querySelector('tx-table').shadowRoot.querySelectorAll('tx-row').forEach(el => {
+			el.shadowRoot.querySelectorAll('output-label').forEach(el => {
+				let event = new CustomEvent('updateOutputLabel', { detail: e.detail });
+				return el.dispatchEvent(event);
+			});
+		});
+	}
+
+	if (document.querySelector('addresses-table')) {
+		document.querySelector('addresses-table').shadowRoot.querySelectorAll('output-label').forEach(el => {
+			el.shadowRoot.querySelectorAll('output-label').forEach(el => {
+				let event = new CustomEvent('updateOutputLabel', { detail: e.detail });
+				return el.dispatchEvent(event);
+			});
+		});
+	}
+
+	if (document.querySelector('address-data')) {
+		document.querySelector('address-data').shadowRoot.querySelectorAll('output-label').forEach(el => {
+			let event = new CustomEvent('updateOutputLabel', { detail: e.detail });
+			return el.dispatchEvent(event);
+		});
+	}
+});
+
+// Clicking somewhere else than on the edit label section cancels the label editing
+document.addEventListener("click", (e) => {
+	addressesTableComponent = document.querySelector('addresses-table')
+	txTableComponent = document.querySelector('tx-table')
+	addressDataComponent = document.querySelector('address-data')
+	const path = e.composedPath()
+	const clickedElement = path[0]
+	const parentElement = path[1]
+	if (addressesTableComponent) {
+		addressesTableComponent.shadowRoot.querySelectorAll('address-row').forEach(addressRow => {
+			const addressLabel = addressRow.shadowRoot.querySelector('output-label')
+			if (addressLabel.isEditing) {
+				console.log("Clicking somewhere else on the screen. Canceling editing.")
+				addressLabel.cancelEditing()
+			}
+		})
+	}
+	else if (txTableComponent) {
+		txTableComponent.shadowRoot.querySelectorAll('tx-row').forEach(txRow => {
+			const addressLabel = txRow.shadowRoot.querySelector('output-label')
+			// In the tx labeling there also "labels" ("X Recipients") which aren't label components
+			if (addressLabel !== null && addressLabel.isEditing) {
+				console.log("Clicking somewhere else on the screen. Canceling editing.")
+				addressLabel.cancelEditing()
+			}
+		})
+	}
+	// Can't use else if here: Address data is a pop-up so addresses or tx table are still in the DOM
+	if (addressDataComponent) {
+		addressDataComponent.shadowRoot.querySelectorAll('output-label').forEach(addressLabel => {
+			if (addressLabel.isEditing) {
+				console.log("Clicking somewhere else on the screen. Canceling editing.")
+				addressLabel.cancelEditing()
+			}
+		})
+	}
+})
+// end output label // TODO XF
 
 document.documentElement.style.setProperty('--mobileDistanceElementBottomHeight', `${Math.max(0, window.outerHeight - window.innerHeight)}px`);
 
